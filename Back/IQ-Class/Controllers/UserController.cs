@@ -2,7 +2,6 @@
 using IQ_Class.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace IQ_Class.Controllers
 {
@@ -12,11 +11,13 @@ namespace IQ_Class.Controllers
     {
         private UserService _userService;
         private TokenService _tokenService;
+        private EmailService _emailService;
 
-        public UserController(UserService userService, TokenService tokenService)
+        public UserController(UserService userService, TokenService tokenService, EmailService emailService)
         {
             _userService = userService;
             _tokenService = tokenService;
+            _emailService = emailService;
         }
 
         [HttpPost("cadastro")]
@@ -45,33 +46,29 @@ namespace IQ_Class.Controllers
         [AllowAnonymous]
         public IActionResult GetNewAcessToken([FromBody] string email)
         {
-            var token = _userService.RequestNewAcess(email);
-            return Ok(token);
+            var user = _userService.RequestNewAcess(email);
+
+            if (user == null)
+            {
+                return NotFound("Not found user");
+            }
+
+            var SendEmail = new EmailBaseDto();
+
+            SendEmail.receiver_email = user.email;
+            SendEmail.receiver_name = user.name;
+            SendEmail.subject = "Código de verificação IqClass";
+            SendEmail.verification_code = user.verification_code;
+
+            _emailService.SendEmail(SendEmail);
+
+            return Ok();
         }
 
         [HttpPost("change-password")]
         [AllowAnonymous]
         public IActionResult ChangePassword([FromBody] ChangePasswordDto dto)
         {
-            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
-
-            var decodedToken = _tokenService.DecodeToken(token);
-            int id;
-            Guid guid;
-            string email;
-
-            if(!decodedToken.ContainsKey("id") || !decodedToken.ContainsKey("guid") || !decodedToken.TryGetValue("email", out email))
-            {
-                return NotFound("Not Found Token");
-            }
-
-            int.TryParse(decodedToken["id"], out id);
-            Guid.TryParse(decodedToken["guid"], out guid);
-
-            dto.id = id;
-            dto.guid = guid;
-            dto.email = email;
-
             var user = _userService.ChangePassword(dto);
 
             if(user == null)
@@ -79,11 +76,7 @@ namespace IQ_Class.Controllers
                 return NotFound("Not Found User");
             }
 
-            return Ok(user);
+            return Ok("Senha alterada com sucesso!");
         }
-
-        [HttpGet("email")]
-        [AllowAnonymous]
-        public IActionResult GetEmail() { }
     }
 }

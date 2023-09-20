@@ -8,7 +8,7 @@
         public string email { get; set; }
         public string phone { get; set; }
         public DateTime? last_acess { get; set; }
-        public Guid? guid { get; set; }
+        public string verification_code { get; set; }
         public List<string> roles { get; set; }
     }
 }

@@ -4,9 +4,10 @@ namespace IQ_Class.Data.Dtos
 {
     public class ChangePasswordDto
     {
-        public int id { get; set; }
+        [Required]
         public string email { get; set; }
-        public Guid guid { get; set; }
+        [Required]
+        public string verification_code { get; set; }
 
         [Required(ErrorMessage = "Senha obrigatório")]
         [StringLength(10, ErrorMessage = "Senha pequena")]

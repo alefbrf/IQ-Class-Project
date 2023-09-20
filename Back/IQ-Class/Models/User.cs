@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace IQ_Class.Models
 {
@@ -10,8 +12,9 @@ namespace IQ_Class.Models
         public string email { get; set; }
         public string phone { get; set; }
         public DateTime? last_acess { get; set; }
-        public Guid guid { get; set; }
-        public bool guid_active { get; set; }
+        [MaxLength(6)]
+        public string verification_code { get; set; } = "000000";
+        public bool verification_code_active { get; set; }
         public bool online { get; set; }
         public int? schoolid { get; set; }
         public virtual School? school { get; set; }

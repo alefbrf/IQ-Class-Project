@@ -70,7 +70,7 @@ namespace IQ_Class.Services
             return token;
         }
 
-        public string RequestNewAcess(string email)
+        public User? RequestNewAcess(string email)
         {
             var currentUser = (
                     from objUser in _context.users
@@ -80,20 +80,22 @@ namespace IQ_Class.Services
                     objUser
                 ).FirstOrDefault();
 
-            if (String.IsNullOrWhiteSpace(email) || currentUser == null || currentUser.guid_active)
+            if (String.IsNullOrWhiteSpace(email) || currentUser == null || currentUser.verification_code_active)
             {
-                throw new ApplicationException("Usuário não encontrado!");
+                return null;
             }
 
-            var guid = Guid.NewGuid();
+            Random Random = new Random();
+            int RandomNumber = Random.Next(1000000);
+            string sixDigitNumber = RandomNumber.ToString("D6");
 
-            currentUser.guid = guid;
-            currentUser.guid_active = true;
+            currentUser.verification_code = sixDigitNumber;
+            currentUser.verification_code_active = true;
 
             _context.users.Update(currentUser);
             _context.SaveChanges();
 
-            return _tokenService.GenerateResetPasswordToken(currentUser);
+            return currentUser;
         }
 
         public User? ChangePassword(ChangePasswordDto dto)
@@ -101,10 +103,9 @@ namespace IQ_Class.Services
             var currentUser = (
                     from objUser in _context.users
                     where
-                        objUser.id == dto.id &&
                         objUser.email == dto.email &&
-                        objUser.guid == dto.guid &&
-                        objUser.guid_active
+                        objUser.verification_code == dto.verification_code &&
+                        objUser.verification_code_active
                     select objUser
                 ).FirstOrDefault();
 
@@ -114,8 +115,8 @@ namespace IQ_Class.Services
             };
 
             currentUser.password_hash = BCrypt.Net.BCrypt.HashPassword(dto.password);
-            currentUser.guid = Guid.Empty;
-            currentUser.guid_active = false;
+            currentUser.verification_code = "000000";
+            currentUser.verification_code_active = false;
 
             _context.users.Update(currentUser);
             _context.SaveChanges();

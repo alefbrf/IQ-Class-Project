@@ -19,6 +19,8 @@ builder.Services.AddScoped<UserService>();
 
 builder.Services.AddScoped<TokenService>();
 
+builder.Services.AddScoped<EmailService>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
