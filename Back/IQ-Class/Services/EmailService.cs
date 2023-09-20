@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MailKit.Net.Smtp;
+﻿using MailKit.Net.Smtp;
 using MimeKit;
 using IQ_Class.Data.Dtos;
 using MailKit.Security;
