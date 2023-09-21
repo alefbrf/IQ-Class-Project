@@ -1,4 +1,4 @@
-# IQ-Class-Project
+# IQ-Class-Project [Em Desenvolvimento]
 
 Sistema de gerênciamento para escolas--
 
