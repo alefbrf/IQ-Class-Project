@@ -1,44 +1,49 @@
-﻿using MailKit.Net.Smtp;
-using MimeKit;
-using IQ_Class.Data.Dtos;
-using MailKit.Security;
+﻿using IQ_Class.Data.Dtos;
+using System.Net;
+using System.Net.Mail;
 
 namespace IQ_Class.Services
 {
     public class EmailService
     {
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
-        public MimeMessage CreateEmailMessage(EmailBaseDto dto)
+
+        public MailMessage CreateEmailMessage(EmailBaseDto dto)
         {
-            var email = new MimeMessage();
+            string receiver = dto.receiver_email;
+            string sender = _configuration["Email:UserApp"];
+            string subject = dto.subject;
+            string body = $"@Código de recuperação de conta: {dto.verification_code}";
 
-            email.From.Add(new MailboxAddress("IqClass", _configuration["Email:UserApp"]));
-            email.To.Add(new MailboxAddress(dto.receiver_name, dto.receiver_email));
+            MailMessage message = new MailMessage(sender, receiver, subject, body);
 
-            email.Subject = dto.subject;
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
-            {
-                Text = $"Código de recuperação de conta: {dto.verification_code}"
-            };
-
-            return email;
+            return message;
         }
+
         public void SendEmail(EmailBaseDto dto)
         {
-            var email = CreateEmailMessage(dto);
+            var message = CreateEmailMessage(dto);
 
-            using (var smtp = new SmtpClient())
+            try
             {
-                smtp.Connect(_configuration["Email:smtp"], int.Parse(_configuration["Email:port"]) , SecureSocketOptions.StartTls);
+                using (SmtpClient smtpClient = new SmtpClient())
+                {
 
-                smtp.Authenticate(_configuration["Email:UserApp"], _configuration["Email:KeyApp"]);
+                    smtpClient.Credentials = new NetworkCredential(_configuration["Email:UserApp"], _configuration["Email:KeyApp"]);
+                    smtpClient.Host = _configuration["Email:smtp"];
+                    smtpClient.Port = int.Parse(_configuration["Email:port"]);
+                    smtpClient.EnableSsl = true;
 
-                smtp.Send(email);
-                smtp.Disconnect(true);
+                    smtpClient.Send(message);
+                }
+                    
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
     }
