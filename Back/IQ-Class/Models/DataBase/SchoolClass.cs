@@ -1,4 +1,6 @@
-﻿namespace IQ_Class.Models
+﻿using IQ_Class.Models.DataBase;
+
+namespace IQ_Class.Models
 {
     public class SchoolClass
     {

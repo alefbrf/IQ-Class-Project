@@ -17,7 +17,7 @@ namespace IQ_Class.Services
             string receiver = dto.receiver_email;
             string sender = _configuration["Email:UserApp"];
             string subject = dto.subject;
-            string body = $"@Código de recuperação de conta: {dto.verification_code}";
+            string body = $"Código de recuperação de conta: {dto.verification_code}";
 
             MailMessage message = new MailMessage(sender, receiver, subject, body);
 

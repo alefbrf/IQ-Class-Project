@@ -32,15 +32,8 @@ namespace IQ_Class.Services
             {
                 new Claim("email", user.email),
                 new Claim("id", user.id.ToString()),
+                new Claim(ClaimTypes.Role, user.role),
             };
-
-            if(user.roles != null)
-            {
-                foreach(string role in user.roles) 
-                    {
-                        claims.Add(new Claim(ClaimTypes.Role, role));
-                    };
-            }
 
             return GenerateToken(claims);
         }

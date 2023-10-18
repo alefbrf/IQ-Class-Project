@@ -4,6 +4,7 @@ using IQ_Class.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IQ_Class.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231002121408_teste-5")]
+    partial class teste5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,29 +23,6 @@ namespace IQ_Class.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
-
-            modelBuilder.Entity("IQ_Class.Models.DataBase.UserClass", b =>
-                {
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
-
-                    b.Property<int>("school_classid")
-                        .HasColumnType("int");
-
-                    b.Property<int>("userid")
-                        .HasColumnType("int");
-
-                    b.HasKey("id");
-
-                    b.HasIndex("school_classid");
-
-                    b.HasIndex("userid");
-
-                    b.ToTable("users_class");
-                });
 
             modelBuilder.Entity("IQ_Class.Models.Role", b =>
                 {
@@ -70,24 +49,9 @@ namespace IQ_Class.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("dt_created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("dt_updated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("logo")
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("phone")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -169,23 +133,27 @@ namespace IQ_Class.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("IQ_Class.Models.DataBase.UserClass", b =>
+            modelBuilder.Entity("IQ_Class.Models.UserClass", b =>
                 {
-                    b.HasOne("IQ_Class.Models.SchoolClass", "school_class")
-                        .WithMany("users_class")
-                        .HasForeignKey("school_classid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.HasOne("IQ_Class.Models.User", "user")
-                        .WithMany("user_class")
-                        .HasForeignKey("userid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"), 1L, 1);
 
-                    b.Navigation("school_class");
+                    b.Property<int>("school_classid")
+                        .HasColumnType("int");
 
-                    b.Navigation("user");
+                    b.Property<int>("userid")
+                        .HasColumnType("int");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("school_classid");
+
+                    b.HasIndex("userid");
+
+                    b.ToTable("users_class");
                 });
 
             modelBuilder.Entity("IQ_Class.Models.SchoolClass", b =>
@@ -214,6 +182,25 @@ namespace IQ_Class.Migrations
                     b.Navigation("role");
 
                     b.Navigation("school");
+                });
+
+            modelBuilder.Entity("IQ_Class.Models.UserClass", b =>
+                {
+                    b.HasOne("IQ_Class.Models.SchoolClass", "school_class")
+                        .WithMany("users_class")
+                        .HasForeignKey("school_classid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("IQ_Class.Models.User", "user")
+                        .WithMany("user_class")
+                        .HasForeignKey("userid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("school_class");
+
+                    b.Navigation("user");
                 });
 
             modelBuilder.Entity("IQ_Class.Models.Role", b =>

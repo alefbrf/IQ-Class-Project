@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using IQ_Class.Data;
+using IQ_Class.Data.Commun;
 using IQ_Class.Data.Dtos;
 using IQ_Class.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IQ_Class.Services
 {
@@ -18,11 +20,25 @@ namespace IQ_Class.Services
             _context = context;
         }
 
-        public void Register(CreateUserDto dto)
+        public User? GetUserByID(int id) 
+        {
+            var user = (
+                from
+                    objUser in _context.users
+                where
+                    objUser.id == id
+                select
+                    objUser
+            ).FirstOrDefault();
+
+            return user;
+        }
+
+        public async Task<Result<User>> Register(CreateUserDto dto)
         {
             if (_context.users.Any(user => user.email == dto.email))
             {
-                throw new ApplicationException("Email '" + dto.email + "' já está em uso!");
+                return new Result<User>($"Email {dto.email} já está em uso!");
             }
             
             User user = _mapper.Map<User>(dto);
@@ -30,13 +46,18 @@ namespace IQ_Class.Services
             user.password_hash = BCrypt.Net.BCrypt.HashPassword(dto.password);
 
             _context.users.Add(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
+            return new Result<User>(user);
         }
 
-        public string Authenticate(LoginUserDto user)
+        public string? Authenticate(LoginUserDto user)
         {
             var currentUser = (
-                from objUser in _context.users
+                from 
+                    objUser in _context.users
+                join
+                    objRoles in _context.roles on objUser.roleid equals objRoles.id
                 where
                     objUser.email == user.email
                 select new AuthenticatedUserDto
@@ -45,24 +66,14 @@ namespace IQ_Class.Services
                     name = objUser.name,
                     email = objUser.email,
                     password_hash = objUser.password_hash,
+                    role = objRoles.role
                 }
-                ).SingleOrDefault();
+            ).SingleOrDefault();
 
 
             if (currentUser == null || !BCrypt.Net.BCrypt.Verify(user.password, currentUser.password_hash))
             {
-                throw new ApplicationException("Usuário ou senha incorreto!");
-            }
-
-            var roles = (
-                from objUserRoles in _context.user_roles.Where(x => x.userid == currentUser.id)
-                join objRoles in _context.roles on objUserRoles.roleid equals objRoles.id
-                select objRoles.role
-            ).ToList();
-
-            if (roles.Count > 0)
-            {
-                currentUser.roles = new List<string> { roles[0] };
+                return null;
             }
 
             var token = _tokenService.GenerateAuthenticationToken(currentUser);
@@ -73,12 +84,13 @@ namespace IQ_Class.Services
         public User? RequestNewAcess(string email)
         {
             var currentUser = (
-                    from objUser in _context.users
-                    where
-                        objUser.email == email
-                    select
-                    objUser
-                ).FirstOrDefault();
+                from 
+                    objUser in _context.users
+                where
+                    objUser.email == email
+                select
+                objUser
+            ).FirstOrDefault();
 
             if (String.IsNullOrWhiteSpace(email) || currentUser == null || currentUser.verification_code_active)
             {
@@ -122,6 +134,23 @@ namespace IQ_Class.Services
             _context.SaveChanges();
 
             return currentUser;
+        }
+
+        public Result<User> DeleteUser(int id)
+        {
+            var user = GetUserByID(id);
+
+            if (user == null)
+            {
+                return new Result<User>("Usuário não encontrado!");
+            }
+
+            var deletedUser = user;
+
+            _context.Remove(user);
+            _context.SaveChanges();
+            Console.WriteLine(user);
+            return new Result<User>(deletedUser, "Usuário deletado");
         }
     }
 }

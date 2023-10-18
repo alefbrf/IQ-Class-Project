@@ -1,4 +1,5 @@
 ﻿using IQ_Class.Models;
+using IQ_Class.Models.DataBase;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,10 +23,10 @@ namespace IQ_Class.Data
                 .WithOne(SchoolUser => SchoolUser.school)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Role>()
-                .HasMany(Roles => Roles.user_role)
-                .WithOne(UserRole => UserRole.role)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<User>()
+                .HasOne(User => User.role)
+                .WithMany(Role => Role.users)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<User>()
                 .HasOne(School => School.school)
@@ -35,7 +36,6 @@ namespace IQ_Class.Data
         public DbSet<School> schools { get; set; }
         public DbSet<User> users { get; set; }
         public DbSet<Role> roles { get; set;}
-        public DbSet<UserRole> user_roles { get; set; }
         public DbSet<SchoolClass> school_class { get; set; }
         public DbSet<UserClass> users_class { get; set; }
     }

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using IQ_Class.Services;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,8 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TokenService>();
 
 builder.Services.AddScoped<EmailService>();
+
+builder.Services.AddScoped<SchoolService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -40,10 +41,22 @@ builder.Services.AddAuthentication(options =>
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers().AddNewtonsoftJson().AddControllersAsServices();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "Cors",
+                      policy =>
+                      {
+                          policy
+                          .AllowAnyHeader()
+                          .AllowAnyOrigin()
+                          .AllowAnyMethod();
+                      });
+});
 
 var app = builder.Build();
 
@@ -55,6 +68,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("Cors");
 
 app.UseAuthentication();
 

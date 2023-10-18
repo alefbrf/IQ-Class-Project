@@ -1,4 +1,4 @@
-﻿namespace IQ_Class.Models
+﻿namespace IQ_Class.Models.DataBase
 {
     public class UserClass
     {

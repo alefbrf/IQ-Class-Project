@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using IQ_Class.Models.DataBase;
 
 namespace IQ_Class.Models
 {
@@ -14,9 +15,10 @@ namespace IQ_Class.Models
         public string verification_code { get; set; } = "000000";
         public bool verification_code_active { get; set; }
         public bool online { get; set; }
+        public int? roleid { get; set; }
+        public virtual Role? role { get; set; }
         public int? schoolid { get; set; }
         public virtual School? school { get; set; }
-        public virtual ICollection<UserRole> user_roles { get; set; }
-        public virtual ICollection<UserClass> user_classes { get; set; }
+        public virtual ICollection<UserClass> user_class { get; set; }
     }
 }

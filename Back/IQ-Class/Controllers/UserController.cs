@@ -1,4 +1,6 @@
-﻿using IQ_Class.Data.Dtos;
+﻿using IQ_Class.Data;
+using IQ_Class.Data.Dtos;
+using IQ_Class.Data.Enums;
 using IQ_Class.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,28 +12,50 @@ namespace IQ_Class.Controllers
     public class UserController : ControllerBase
     {
         private UserService _userService;
-        private TokenService _tokenService;
         private EmailService _emailService;
+        private SchoolService _schoolService;
+        private TokenService _tokenService;
 
-        public UserController(UserService userService, TokenService tokenService, EmailService emailService)
+        public UserController(UserService userService, TokenService tokenService, EmailService emailService, SchoolService schoolService)
         {
             _userService = userService;
-            _tokenService = tokenService;
             _emailService = emailService;
+            _schoolService = schoolService;
+            _tokenService = tokenService;
         }
 
-        [HttpPost("cadastro")]
+        [HttpPost("register")]
         public IActionResult RegisterUser([FromBody]CreateUserDto dto)
         {
-            _userService.Register(dto);
+            if (!dto.roleid.HasValue) {
+                dto.roleid = ((int)EnumarationRole.Roles.ADMIN);
+            }
 
-            return Ok("Usuário cadastrado");
+            if (!dto.schoolid.HasValue)
+            {
+                var newSchool = _schoolService.Create();
+                dto.schoolid = newSchool.Id;
+            }
+
+            var createdUser = _userService.Register(dto);
+
+            if (createdUser.Result.Failure)
+            {
+                return BadRequest(createdUser.Result.Failure);
+            }
+
+            return Ok($"Usuário {dto.name} cadastrado!");
         }
 
         [HttpPost("login")]
         public IActionResult Login([FromBody]LoginUserDto dto)
         {
             var token = _userService.Authenticate(dto);
+
+            if (token == null)
+            {
+                return BadRequest("Usuário ou senha incorreto!");
+            }
 
             return Ok(token);
         }
@@ -77,6 +101,33 @@ namespace IQ_Class.Controllers
             }
 
             return Ok("Senha alterada com sucesso!");
+        }
+
+        [HttpPost("delete-account")]
+        [Authorize]
+        public IActionResult Delete() 
+        {
+            var token = Request.Headers["Authorization"].ToString().Split(" ")[1];
+
+            var decodedToken = _tokenService.DecodeToken(token);
+
+            int id;
+
+            if (!decodedToken.ContainsKey(nameof(id)))
+            {
+                return NotFound("Not Found User");
+            }
+
+            int.TryParse(decodedToken[nameof(id)], out id);
+
+            var result = _userService.DeleteUser(id);
+
+            if (result.Failure)
+            {
+                return BadRequest("Erro ao deletar usuário!");
+            }
+
+            return Ok(result.Message);
         }
     }
 }
