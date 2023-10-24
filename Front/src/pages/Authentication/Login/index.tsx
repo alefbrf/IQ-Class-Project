@@ -41,7 +41,7 @@ export default function Login() {
 
     return (
         <>
-            <div className={styles.login_form}>
+            <div id='login' className={styles.form}>
                 <h2>Bem-vindo</h2>
                 <form onSubmit={e => Logar(e)} >                    
                     <Input 
